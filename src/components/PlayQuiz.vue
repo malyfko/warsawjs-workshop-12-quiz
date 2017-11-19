@@ -1,14 +1,25 @@
 <template>
-  <div class="quiz">
-    <div class="question">
-      {{ getQuestion }}
+  <div>
+    <div v-if="gameStatus === 'playing'" class="quiz">
+      <div class="question">
+        {{ getQuestion }}
+      </div>
+      <ul class="answers-list">
+        <li class="answer" v-for="(answer, index) in getAnswers" v-on:click="goToNextQuestion(index)">
+          {{ answer }}
+        </li>
+      </ul>
     </div>
-    <ul class="answers-list">
-      <li class="answer" v-for="(answer, index) in getAnswers" v-on:click="goToNextQuestion(index)">
-        {{ answer }}
-      </li>
-    </ul>
-    <div class="">Correct answers: {{ correctAnswers }}/{{ getAnswers.length - 1 }}</div>
+    <div v-else class="final-screen">
+      <div v-if="correctAnswers === getCurrentQuiz.questions.length" class="success">
+        You won!
+      </div>
+      <div v-else class="failure">
+        You lost!
+      </div>
+      <button class="restart-button" v-on:click="restartQuiz">Play again</button>
+    </div>
+    <div class="progress">Correct answers: {{ correctAnswers }}/{{ getCurrentQuiz.questions.length }}</div>
   </div>
 </template>
 
@@ -28,7 +39,7 @@
       }
     },
     computed: {
-      getSingleQuiz() { return this.quizzes[this.currentQuizIndex] },
+      getCurrentQuiz() { return this.quizzes[this.currentQuizIndex] },
       getCurrentQuestion() { return this.questions[this.currentQuestionIndex] },
       getQuestion() { return this.getCurrentQuestion.text; },
       getAnswers() { return this.getCurrentQuestion.answers },
@@ -36,7 +47,7 @@
     methods: {
       increaseStep() { this.currentQuestionIndex++ },
       increaseCorrectAnswers() { this.correctAnswers++ },
-      setGameStatus(status) { this.gameStatus = status; console.log(status); },
+      setGameStatus(status) { this.gameStatus = status; },
       goToNextQuestion(index) {
         if (index === this.getCurrentQuestion.correctAnswerIndex){
           this.correctAnswers++;
@@ -44,9 +55,13 @@
         if (this.currentQuestionIndex < this.questions.length - 1) {
           this.increaseStep();
         } else {
-          console.log('bla');
           this.setGameStatus('end');
         }
+      },
+      restartQuiz() {
+        this.setGameStatus('playing');
+        this.currentQuestionIndex = 0;
+        this.correctAnswers = 0;
       },
     }
   }
@@ -65,6 +80,23 @@
     margin: 5px;
     width: 50%;
     padding: 2px;
+    cursor: pointer;
+  }
+  .final-screen .success {
+    background-color: rgba(25, 216, 167, .4);
+    color: rgb(25, 216, 167);
+  }
+  .final-screen .failure {
+    background-color: rgba(216, 25, 74, .4);
+    color: rgb(216, 25, 74);
+  }
+  .restart-button {
+    background-color: blue;
+    color: white;
+    border: none;
+    padding: 5px;
+    font-size: 14px;
+    margin: 20px;
     cursor: pointer;
   }
 </style>
